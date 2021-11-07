@@ -112,6 +112,7 @@ public class Dispatcher {
 
 		/* At this point, we just wait for all the input to be consumed */
 		while(count-- > 0) {
+            System.out.println(count);
 		    rsSem.acquire();
 		}
 
@@ -125,11 +126,6 @@ public class Dispatcher {
 		    wqSem.release();
 		}
 
-		/* Print out result */
-		for(WorkUnit res : resQueue) {
-		    System.out.println(res);
-		}
-		
             } catch (FileNotFoundException e) {
                 System.err.println("Input file does not exist.");
                 e.printStackTrace();
@@ -142,6 +138,10 @@ public class Dispatcher {
             System.err.println("Input file does not exist. Exiting.");        	
         }
 
+    }
+    // getter
+    public LinkedList<WorkUnit> getResQueue() {
+        return this.resQueue;
     }
 
     /* Entry point of the code */
