@@ -14,6 +14,8 @@ package hw6;
 
 public class WorkUnit {
 
+    int upperBound;
+    int lowerBound;
     String hash;
     String result;
 
@@ -33,17 +35,17 @@ public class WorkUnit {
 	return 0;
     }
 
-    public int getUpperBound() {
-	return Integer.MAX_VALUE;
-    }
+    public int getUpperBound() { return Integer.MAX_VALUE; }
+
+    public String getResult() { return result; }
 
     public void setResult(String result) {
 	this.result = result;
     }
 
-    public String getResult() {
-	return result;
-    }
+    public void setUpperBound(int upperBound) { this.upperBound = upperBound; }
+
+    public void setLowerBound(int lowerBound) { this.lowerBound = lowerBound; }
 
     /* Render this WorkUnit when printed */
     @Override
