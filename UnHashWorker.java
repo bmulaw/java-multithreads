@@ -44,6 +44,7 @@ public class UnHashWorker extends Thread {
 
     /* Boolean to kill the thread */
     volatile boolean stopThread = false;
+	boolean pirated;
     
     public UnHashWorker (LinkedList<WorkUnit> workQueue, LinkedList<WorkUnit> resQueue,
 			 Semaphore wqSem, Semaphore wqMutex,
@@ -56,7 +57,8 @@ public class UnHashWorker extends Thread {
 	this.rsSem = rsSem;
 	this.wqMutex = wqMutex;
 	this.rsMutex = rsMutex;	
-	
+	this.pirated = false;
+
 	/* Default to 10 seconds timeout */
 	this.timeoutMillis = 10000;
     }
@@ -74,6 +76,12 @@ public class UnHashWorker extends Thread {
 	/* Loop forever until a match is found */
         for(int cur = input.getLowerBound()+1; cur < input.getUpperBound(); ++cur) {
 		String numString = Integer.toString(cur);
+		if (this.pirated) {
+			String lowerBound = Integer.toString(input.getLowerBound());
+			String upperBound = Integer.toString(input.getUpperBound());
+			String curr_str = Integer.toString(cur);
+			numString = lowerBound + ';' + curr_str + ';' + upperBound;
+		}
             String tmpHash = "";
 
 	    try {
@@ -83,9 +91,13 @@ public class UnHashWorker extends Thread {
 		result.setResult("???");
 		break;
 	    }
-	    
+
             /* Does the current hash matches the target hash? */
             if(tmpHash.equals(to_unhash)) {
+				if (this.pirate) {
+					Pirate.usedBounds.add(input.getUpperBound());
+					Pirate.usedBounds.add(input.getLowerBound());
+				}
 		/* Found it! Return right away. */
 		result.setResult(numString);
 		break;
@@ -96,6 +108,12 @@ public class UnHashWorker extends Thread {
 		result.setResult(null);
 		break;
 	    }
+
+		if (this.pirated) {
+			if (Pirate.usedBounds.contains(input.getUpperBound()) || Pirate.usedBounds.contains(input.getLowerBound())){
+				break;
+			}
+		}
         }
 
 	return result;
@@ -142,7 +160,25 @@ public class UnHashWorker extends Thread {
 	    wqMutex.release();
 	    
 	    if (work != null) {
-		result = timedUnhash(work);
+			if (this.pirated) {
+				int i = 0;
+				boolean broke = false;
+				while (!broke && i < Pirate.cracked.size()) {
+					if (!Pirate.usedBounds.contains(Pirate.cracked.get(i))) {
+						int j = i + 1;
+						while (!broke && j < Pirate.cracked.size()) {
+							if (!Pirate.usedBounds.contains(Pirate.cracked.get(j))) {
+								work.setUpperBound(Pirate.cracked.get(j));
+								work.setLowerBound(Pirate.cracked.get(i));
+								result = timedUnhash(work);
+								if (result.result != null) {
+									broke = true;
+								}
+							} j++;
+						}
+					} i ++;
+				}
+			} else { result = timedUnhash(work); }
 
 		/* Got some result, add it to the output queue */
 		try {
@@ -176,6 +212,7 @@ public class UnHashWorker extends Thread {
     public void setTimeout(int timeout) {
 	this.timeoutMillis = timeout;
     }
+	public void setPirated() { this.pirated = true; }
     
 }
 
