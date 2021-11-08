@@ -3,15 +3,14 @@ import java.util.*;
 import java.util.concurrent.Semaphore;
 
 public class Pirate {
+    // inspired by Dispatcher.java code given by professor
     String fileName;
-    Integer N;
-    Integer timeout;
-
-    public static ArrayList<Integer> usedBounds = new ArrayList<Integer>();
-
+    int numCPUs;
+    int timeoutMillis;
+    ArrayList<UnHashWorker> allWorkers;
+    public static ArrayList<Integer> bounds = new ArrayList<Integer>();
     public static ArrayList<Integer> cracked = new ArrayList<Integer>();
 
-    ArrayList<UnHashWorker> allWorkers;
     LinkedList<WorkUnit> myWorkQueue;
     LinkedList<WorkUnit> myResQueue;
     
@@ -21,15 +20,15 @@ public class Pirate {
     Semaphore rsMutex;
 
     // using the exact same code professor gave us for Dispatcher.java
-    public Pirate(String fileName,Integer N,Integer timeout) {
+    public Pirate(String fileName, int N, int timeout) {
         this.fileName = fileName;
-        this.N = N;
-        this.timeout = timeout;
+        this.numCPUs = N;
+        this.timeoutMillis = timeout;
 
-        this.allWorkers = new ArrayList<UnHashWorker>();
-        
         this.myWorkQueue = new LinkedList<WorkUnit>();
         this.myResQueue = new LinkedList<WorkUnit>();
+
+        this.allWorkers = new ArrayList<UnHashWorker>();
 
         this.wqSem = new Semaphore(0);
         this.rsSem = new Semaphore(0);
@@ -47,40 +46,30 @@ public class Pirate {
         }
     }
 
-    public void findTreasure() {
-        Dispatcher dispatcher = new Dispatcher(fileName, N, timeout);
-        try {
-            dispatcher.dispatch();
-        } catch (InterruptedException e) {
-            System.out.println("InterruptedException, cannot dispatch");
-        }
+    public void findTreasure() throws InterruptedException {
+        Dispatcher dispatcher = new Dispatcher(fileName, numCPUs, timeoutMillis);
+        dispatcher.dispatch();
         
-        LinkedList<WorkUnit> resQueue = dispatcher.getResQueue();
-        LinkedList<WorkUnit> unCracked = new LinkedList<WorkUnit>();
+        LinkedList<WorkUnit> newResQueue = dispatcher.getResQueue();
+        LinkedList<WorkUnit> notCrackedYet = new LinkedList<WorkUnit>();
 
-        for (WorkUnit workUnit : resQueue) {
+        for (WorkUnit workUnit : newResQueue) {
             if (workUnit.getResult() != null) {
                 Integer value = Integer.parseInt(workUnit.getResult());
                 Pirate.cracked.add(value);
             } else {
-                unCracked.add(workUnit);
+                notCrackedYet.add(workUnit);
             }
         }
         Collections.sort(Pirate.cracked);
         System.out.println(Pirate.cracked);
 
         int count = 0;
-        for (WorkUnit workUnit : unCracked) {
+        for (WorkUnit workUnit : notCrackedYet) {
             count++;
             WorkUnit work = new WorkUnit(workUnit.getHash());
-
-            try {
-                wqMutex.acquire();
-            } catch (InterruptedException e) {
-                System.out.println("Interrupted acquire");
-                e.printStackTrace();
-            }
-
+            
+            wqMutex.acquire();
             myWorkQueue.add(work);
             wqSem.release();
             wqMutex.release();
@@ -99,24 +88,23 @@ public class Pirate {
             wqSem.release();
         }
 
-        for (int i=0;i<Pirate.cracked.size();i++) {
-            System.out.println(Pirate.cracked.get(i));
+        for (int value : Pirate.cracked) {
+            System.out.println(value);
         }
+        
         System.out.println(myResQueue);
+        
         for(WorkUnit res : myResQueue) {
             System.out.println(res);
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         String inputFile = args[0];
-
         int N = Integer.parseInt(args[1]);
+        int timeout = Integer.parseInt(args[2]);
 
-        int timeoutMillis = Integer.parseInt(args[2]);
-
-        Pirate pirate = new Pirate(inputFile, N, timeoutMillis);
-
+        Pirate pirate = new Pirate(inputFile, N, timeout);
         pirate.findTreasure();
     }
 }
