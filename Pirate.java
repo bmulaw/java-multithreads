@@ -9,7 +9,7 @@ public class Pirate {
     int timeoutMillis;
     ArrayList<UnHashWorker> allWorkers;
     public static ArrayList<Integer> bounds = new ArrayList<Integer>();
-    public static ArrayList<Integer> cracked = new ArrayList<Integer>();
+    public static ArrayList<Integer> solved = new ArrayList<Integer>();
 
     LinkedList<WorkUnit> myWorkQueue;
     LinkedList<WorkUnit> myResQueue;
@@ -51,21 +51,19 @@ public class Pirate {
         dispatcher.dispatch();
         
         LinkedList<WorkUnit> newResQueue = dispatcher.getResQueue();
-        LinkedList<WorkUnit> notCrackedYet = new LinkedList<WorkUnit>();
+        LinkedList<WorkUnit> notSolved = new LinkedList<WorkUnit>();
 
         for (WorkUnit workUnit : newResQueue) {
             if (workUnit.getResult() != null) {
                 Integer value = Integer.parseInt(workUnit.getResult());
-                Pirate.cracked.add(value);
+                Pirate.solved.add(value);
             } else {
-                notCrackedYet.add(workUnit);
+                notSolved.add(workUnit);
             }
         }
-        Collections.sort(Pirate.cracked);
-        System.out.println(Pirate.cracked);
 
         int count = 0;
-        for (WorkUnit workUnit : notCrackedYet) {
+        for (WorkUnit workUnit : notSolved) {
             count++;
             WorkUnit work = new WorkUnit(workUnit.getHash());
             
@@ -88,7 +86,7 @@ public class Pirate {
             wqSem.release();
         }
 
-        for (int value : Pirate.cracked) {
+        for (int value : Pirate.solved) {
             System.out.println(value);
         }
         
