@@ -94,9 +94,9 @@ public class UnHashWorker extends Thread {
 
             /* Does the current hash matches the target hash? */
             if(tmpHash.equals(to_unhash)) {
-				if (this.pirate) {
-					Pirate.usedBounds.add(input.getUpperBound());
-					Pirate.usedBounds.add(input.getLowerBound());
+				if (this.pirated) {
+					Pirate.bounds.add(input.getUpperBound());
+					Pirate.bounds.add(input.getLowerBound());
 				}
 		/* Found it! Return right away. */
 		result.setResult(numString);
@@ -110,7 +110,7 @@ public class UnHashWorker extends Thread {
 	    }
 
 		if (this.pirated) {
-			if (Pirate.usedBounds.contains(input.getUpperBound()) || Pirate.usedBounds.contains(input.getLowerBound())){
+			if (Pirate.bounds.contains(input.getUpperBound()) || Pirate.bounds.contains(input.getLowerBound())){
 				break;
 			}
 		}
@@ -163,13 +163,13 @@ public class UnHashWorker extends Thread {
 			if (this.pirated) {
 				int i = 0;
 				boolean broke = false;
-				while (!broke && i < Pirate.cracked.size()) {
-					if (!Pirate.usedBounds.contains(Pirate.cracked.get(i))) {
+				while (!broke && i < Pirate.solved.size()) {
+					if (!Pirate.bounds.contains(Pirate.solved.get(i))) {
 						int j = i + 1;
-						while (!broke && j < Pirate.cracked.size()) {
-							if (!Pirate.usedBounds.contains(Pirate.cracked.get(j))) {
-								work.setUpperBound(Pirate.cracked.get(j));
-								work.setLowerBound(Pirate.cracked.get(i));
+						while (!broke && j < Pirate.solved.size()) {
+							if (!Pirate.bounds.contains(Pirate.solved.get(j))) {
+								work.setUpperBound(Pirate.solved.get(j));
+								work.setLowerBound(Pirate.solved.get(i));
 								result = timedUnhash(work);
 								if (result.result != null) {
 									broke = true;
