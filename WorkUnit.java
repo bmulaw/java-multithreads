@@ -13,7 +13,7 @@ package hw6;
 /***************************************************/
 
 public class WorkUnit {
-
+    boolean easy;
     int upperBound;
     int lowerBound;
     String hash;
@@ -21,8 +21,17 @@ public class WorkUnit {
 
     /* Simple constructor to set the input hash */
     public WorkUnit (String hash) {
-	this.hash = hash;
-	this.result = null;
+        this.easy = true;
+        this.hash = hash;
+        this.result = null;
+    }
+
+    public WorkUnit (String hash, int lowerBound, int upperBound) {
+        this.easy = false;
+        this.hash = hash;
+        this.result = null;
+        this.upperBound = upperBound;
+        this.lowerBound = lowerBound;
     }
 
     public String getHash() {
@@ -32,10 +41,18 @@ public class WorkUnit {
     /* These can be handy to generalize the boundaries of hash
      * cracking */
     public int getLowerBound() {
-	return 0;
+        if (easy) return 0;
+        else return lowerBound;
     }
 
-    public int getUpperBound() { return Integer.MAX_VALUE; }
+    public int getUpperBound() {
+        if (easy) return Integer.MAX_VALUE;
+        else return upperBound;
+    }
+
+    public boolean isEasy() {
+        return easy;
+    }
 
     public String getResult() { return result; }
 
