@@ -9,12 +9,11 @@ public class Pirate {
     int timeoutMillis;
     ArrayList<UnHashWorker> allWorkers;
     public static ArrayList<Integer> bounds = new ArrayList<Integer>();
-    public static ArrayList<Integer> solved = new ArrayList<Integer>();
+    ArrayList<Integer> solved = new ArrayList<Integer>();
 
     LinkedList<WorkUnit> myWorkQueue;
     LinkedList<WorkUnit> myResQueue;
-    
-    Semaphore wqSem;
+        Semaphore wqSem;
     Semaphore rsSem;
     Semaphore wqMutex;
     Semaphore rsMutex;
@@ -49,18 +48,19 @@ public class Pirate {
     public void findTreasure() throws InterruptedException {
         Dispatcher dispatcher = new Dispatcher(fileName, numCPUs, timeoutMillis);
         dispatcher.dispatch();
-        
         LinkedList<WorkUnit> newResQueue = dispatcher.getResQueue();
         LinkedList<WorkUnit> notSolved = new LinkedList<WorkUnit>();
 
         for (WorkUnit workUnit : newResQueue) {
             if (workUnit.getResult() != null) {
                 Integer value = Integer.parseInt(workUnit.getResult());
-                Pirate.solved.add(value);
+                solved.add(value);
             } else {
                 notSolved.add(workUnit);
             }
         }
+
+        Collections.sort(solved);
 
         int count = 0;
         for (WorkUnit workUnit : notSolved) {
@@ -86,7 +86,7 @@ public class Pirate {
             wqSem.release();
         }
 
-        for (int value : Pirate.solved) {
+        for (int value : solved) {
             System.out.println(value);
         }
         

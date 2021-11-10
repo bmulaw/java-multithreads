@@ -45,7 +45,8 @@ public class UnHashWorker extends Thread {
     /* Boolean to kill the thread */
     volatile boolean stopThread = false;
 	boolean pirated;
-    
+	ArrayList<Integer> unhashed;
+
     public UnHashWorker (LinkedList<WorkUnit> workQueue, LinkedList<WorkUnit> resQueue,
 			 Semaphore wqSem, Semaphore wqMutex,
 			 Semaphore rsSem, Semaphore rsMutex)
@@ -75,22 +76,22 @@ public class UnHashWorker extends Thread {
 	
 	/* Loop forever until a match is found */
         for(int cur = input.getLowerBound()+1; cur < input.getUpperBound(); ++cur) {
-		String numString = Integer.toString(cur);
-		if (this.pirated) {
-			String lowerBound = Integer.toString(input.getLowerBound());
-			String upperBound = Integer.toString(input.getUpperBound());
-			String curr_str = Integer.toString(cur);
-			numString = lowerBound + ';' + curr_str + ';' + upperBound;
-		}
-            String tmpHash = "";
+			String numString = Integer.toString(cur);
+			if (this.pirated) {
+				String lowerBound = Integer.toString(input.getLowerBound());
+				String upperBound = Integer.toString(input.getUpperBound());
+				String curr_str = Integer.toString(cur);
+				numString = lowerBound + ';' + curr_str + ';' + upperBound;
+			}
+			String tmpHash = "";
 
-	    try {
-		tmpHash = hasher.hash(numString);
-            } catch (NoSuchAlgorithmException ex) {
-		System.err.println("Unable to compute MD5 hashes.");
-		result.setResult("???");
-		break;
-	    }
+			try {
+			tmpHash = hasher.hash(numString);
+				} catch (NoSuchAlgorithmException ex) {
+				System.err.println("Unable to compute MD5 hashes.");
+				result.setResult("???");
+				break;
+			}
 
             /* Does the current hash matches the target hash? */
             if(tmpHash.equals(to_unhash)) {
@@ -98,15 +99,15 @@ public class UnHashWorker extends Thread {
 					Pirate.bounds.add(input.getUpperBound());
 					Pirate.bounds.add(input.getLowerBound());
 				}
-		/* Found it! Return right away. */
-		result.setResult(numString);
-		break;
+			/* Found it! Return right away. */
+			result.setResult(numString);
+			break;
 	    }
 
 	    /* Check timeout, break if time budget exceeded */
 	    if (System.currentTimeMillis() > timeStart + this.timeoutMillis) {
-		result.setResult(null);
-		break;
+			result.setResult(null);
+			break;
 	    }
 
 		if (this.pirated) {
@@ -163,13 +164,13 @@ public class UnHashWorker extends Thread {
 			if (this.pirated) {
 				int i = 0;
 				boolean broke = false;
-				while (!broke && i < Pirate.solved.size()) {
-					if (!Pirate.bounds.contains(Pirate.solved.get(i))) {
+				while (!broke && i < unhashed.size()) {
+					if (!Pirate.bounds.contains(unhashed.get(i))) {
 						int j = i + 1;
-						while (!broke && j < Pirate.solved.size()) {
-							if (!Pirate.bounds.contains(Pirate.solved.get(j))) {
-								work.setUpperBound(Pirate.solved.get(j));
-								work.setLowerBound(Pirate.solved.get(i));
+						while (!broke && j < unhashed.size()) {
+							if (!Pirate.bounds.contains(unhashed.get(j))) {
+								work.setUpperBound(unhashed.get(j));
+								work.setLowerBound(unhashed.get(i));
 								result = timedUnhash(work);
 								if (result.result != null) {
 									broke = true;
@@ -213,7 +214,7 @@ public class UnHashWorker extends Thread {
 	this.timeoutMillis = timeout;
     }
 	public void setPirated() { this.pirated = true; }
-    
+    public void setUnhashed(ArrayList<Integer> unhashed){ this.unhashed = unhashed; }
 }
 
 /* END -- Q1BSR1QgUmVuYXRvIE1hbmN1c28= */
